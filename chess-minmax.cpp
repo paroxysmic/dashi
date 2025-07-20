@@ -1,5 +1,6 @@
 #include "chess.hpp"
 #include <cstdlib>
+#include <iostream> 
 int main() {
     Board board;
     board.initialize();
