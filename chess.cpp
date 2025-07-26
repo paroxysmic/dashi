@@ -1,16 +1,10 @@
 #include "chess.hpp"
 #include <iostream>
+Move::Move(uint64_t startsquare, uint64_t finalsquare) {
+    startsq = startsquare;
+    finalsq = finalsquare;
+}
 Board::Board() {
-    for(int i=0;i<64;i++) {
-        int sq = 1ULL << i;
-        KNIGHT_ATTACKS[i] =  (((sq << 6) | (sq >> 10)) & ~(FILE_G | FILE_H)) | 
-                    (((sq << 10) | (sq >> 6)) & ~(FILE_A | FILE_B)) |
-                    (((sq << 15) | (sq >> 17)) & ~(FILE_A)) | 
-                    (((sq >> 15) | (sq << 17)) & ~(FILE_H)); 
-        KING_ATTACKS[i] =  (((sq << 7) | (sq >> 1) | (sq >> 9)) & ~(FILE_A)) |
-                    (((sq >> 7) | (sq << 1) | (sq << 9)) & ~(FILE_H)) | 
-                    (sq >> 8) | (sq << 8);
-    }
     for(int i=0;i<12;i++) {
         this->data[i] = 0;
     }
@@ -94,7 +88,66 @@ std::array<uint64_t, 64> Board::gen_rook_masks() {
     }
     return masks;
 }     
-
+uint64_t Board::getPSLPawnMoves(uint64_t pos, enum Team team) {
+    uint64_t mov = ((team == BLACK) ? pos << 8 : pos >> 8) & empties;
+    uint64_t atk = ((mov >> 1) & ~(FILE_A)) | ((mov << 1) & ~(FILE_H));
+    uint64_t enemy = team == BLACK ? whites : blacks;
+    return mov | (atk & enemy);
+}
+uint64_t Board::getPSLKnightMoves(uint64_t pos, enum Team team) {
+    uint64_t pslm = (((pos << 6) | (pos >> 10)) & ~(FILE_G | FILE_H)) | 
+                    (((pos << 10) | (pos >> 6)) & ~(FILE_A | FILE_B)) |
+                    (((pos << 15) | (pos >> 17)) & ~(FILE_A)) | 
+                    (((pos >> 15) | (pos << 17)) & ~(FILE_H));
+    pslm &= ~(team == BLACK ? whites : blacks);
+    return pslm;
+}
+uint64_t Board::getPSLBishopMoves(uint64_t pos, enum Team team) {
+    uint64_t pslm = 0;
+    uint64_t blockers = blacks & whites;
+    int direcs[4] = {-9, -7, 7, 9};
+    int borders[4] = {FILE_H, FILE_H, FILE_A, FILE_A};
+    for(int i=0;i<4;i++) {
+        uint64_t cpos = pos;
+        for(int j=0;j<6;j++) {
+            cpos = direcs > 0 ? cpos << direcs[i]: cpos >> -direcs[i];
+            pslm &= cpos;
+            if (((cpos & borders[i]) != 0) || (blockers & cpos != 0)) {
+                break;
+            }
+        }
+    }
+    pslm &= ~(team == BLACK ? blacks : whites); 
+    return pslm;
+}
+uint64_t Board::getPSLRookMoves(uint64_t pos, enum Team team) {
+    uint64_t pslm = 0;
+    uint64_t blockers = blacks & whites;
+    int direcs[4] = {-8, -1, 1, 8};
+    int borders[4] = {0, FILE_H, FILE_A, 0};
+    for(int i=0;i<4;i++) {
+        uint64_t cpos = pos;
+        for(int j=0;j<6;j++) {
+            cpos = direcs > 0 ? cpos << direcs[i]: cpos >> -direcs[i];
+            pslm &= cpos;
+            if (((cpos & borders[i]) != 0) || (blockers & cpos != 0)) {
+                break;
+            }
+        }
+    }
+    pslm &= ~(team == BLACK ? blacks : whites); 
+    return pslm;
+}
+uint64_t Board::getPSLQueenMoves(uint64_t pos, enum Team team) {
+    return getPSLRookMoves(pos, team) & getPSLBishopMoves(pos, team);
+}
+uint64_t Board::getPSLKingMoves(uint64_t pos, enum Team team) {
+    uint64_t pslm = (((pos << 7) | (pos >> 1) | (pos >> 9)) & ~(FILE_A)) |
+                    (((pos >> 7) | (pos << 1) | (pos << 9)) & ~(FILE_H)) | 
+                    (pos >> 8) | (pos << 8);
+    pslm &= ~(team == BLACK ? whites : blacks);
+    return pslm;
+}
 void desc_u64(uint64_t b) {
     for(int i=0;i<8;i++) {
         for(int j=0;j<8;j++) {
@@ -102,9 +155,6 @@ void desc_u64(uint64_t b) {
         }
         std::cout << '\n'; 
     }
-}
-uint64_t shitty_hash(uint64_t key, uint64_t magic, int shift){
-    return (key * magic) >> shift;
 }
 
 

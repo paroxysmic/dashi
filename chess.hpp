@@ -5,7 +5,6 @@
 #define set_bit(b, i) ((b) |= (1ULL << (i)))
 #define get_bit(b, i) ((b) & (1ULL << (i)))
 #define clear_bit(b, i) ((b) &= ~(1ULL << (i)))
-#define get_LSB(b) (__builtin_ctzll(b))
 #define FILE_A 0x0101010101010101ULL
 #define FILE_B 0x0202020202020202ULL
 #define FILE_C 0x0404040404040404ULL
@@ -22,25 +21,38 @@
 #define RANK_6 0x0000FF0000000000ULL
 #define RANK_7 0x00FF000000000000ULL
 #define RANK_8 0xFF00000000000000ULL
+#define FULL 0xFFFFFFFFFFFFFFFFULL
+enum Team{
+    WHITE = 0, 
+    BLACK = 1,
+    NONE = 2
+};
+struct Move{
+    Move(uint64_t ssq, uint64_t fsq);
+    uint64_t startsq;
+    uint64_t finalsq;
+};
 class Board{
     public:
         Board();
         void display();
         void initialize();
-        uint64_t data[12];
-        uint64_t whites;
-        uint64_t blacks;
-        uint64_t empties;   
+        std::array<uint64_t, 12> data = {0};
+        uint64_t whites = 0;
+        uint64_t blacks = 0;
+        uint64_t empties = FULL;   
         std::array<uint64_t, 64> gen_bishop_masks();
         std::array<uint64_t, 64> gen_rook_masks();
-        std::array<uint64_t, 64> KNIGHT_ATTACKS;
-        std::array<uint64_t, 64> KING_ATTACKS; 
         std::array<uint64_t, 64> BISHOP_MASKS = gen_bishop_masks();
         std::array<uint64_t, 64> ROOK_MASKS = gen_rook_masks();   
-        //std::array<uint64_t, 32768> BISHOP_ATTACKS;
-        //std::array<uint64_t, 262144> ROOK_ATTACKS;
+        uint64_t getPSLPawnMoves(uint64_t pos, enum Team team);
+        uint64_t getPSLKnightMoves(uint64_t pos, enum Team team);
+        uint64_t getPSLBishopMoves(uint64_t pos, enum Team team);
+        uint64_t getPSLRookMoves(uint64_t pos, enum Team team);
+        uint64_t getPSLQueenMoves(uint64_t pos, enum Team team);
+        uint64_t getPSLKingMoves(uint64_t pos, enum Team team);    
+            
 };
-
 void desc_u64(uint64_t b);
-uint64_t shitty_hash(uint64_t key, uint64_t magic);
+uint64_t shitty_hash(uint64_t key, uint64_t magic, int shiftS);
 #endif
