@@ -15,10 +15,12 @@ int bitcount(uint64_t num) {
     }
     return rt;
 }
-uint64_t shitty_hash(uint64_t key, uint64_t magic){
-    return (key * magic) >> (64 - bitcount(key));
+int shitty_hash(uint64_t key, uint64_t magic){
+    //trying to extract 12 bits of entropy, so grab the 12 MSB
+    //the MSB are more "entropic" bcz *any* bits can affect them
+    return (key * magic) >> 52;
 }
-std::vector<uint64_t> gen_blocker_boards(uint64_t bitmask) {
+std::vector<uint64_t> gen_bit_combs(uint64_t bitmask) {
     int bmbc = bitcount(bitmask);                  
     std::vector<uint64_t> bits;
     std::vector<uint64_t> boards(1 << bmbc, 0);
@@ -37,44 +39,55 @@ std::vector<uint64_t> gen_blocker_boards(uint64_t bitmask) {
     return boards;
 }
 uint64_t gen_rook_attack_board(uint64_t pos, uint64_t bitmask) {
-    int direcs[4] = {-8, -1, 1, 8};
-    uint64_t bounds[4] = {0, FILE_H, FILE_A, 0};
+    if(bitcount(pos) != 1) {
+        throw std::runtime_error("rook position should be one-hot!");
+    }
     uint64_t atkbrd = 0;
-    for (int i=0;i<4;i++) {
-        bool unblocked = true;
+    int direcs[4] = {-8, -1, 1, 8};
+    uint64_t borders[4] = {0, FILE_H, FILE_A, 0};
+    for(int i=0;i<4;i++) {
         uint64_t cpos = pos;
+        bool unblocked = true;
         while(unblocked) {
-            cpos = direcs[i] > 0 ? cpos << direcs[i] : cpos >> -direcs[i]; 
-            if (cpos & (bounds[i] | bitmask) != 0) {
-                break;  
+            cpos = direcs[i] > 0 ? cpos << direcs[i] : cpos >> -direcs[i];
+            if((cpos == 0) || (((atkbrd | borders[i]) & cpos) != 0)) {
+                unblocked = false;
             }
-            atkbrd += cpos;
+            if(unblocked) {
+                atkbrd += cpos;
+            }
         }
     }
+    return atkbrd;
 }   
 int main() {
     Board board;
-    std::vector<uint64_t> magics(64, 0);
-    for(int i=0;i<64;i++) {
-        std::vector<uint64_t> blockerboards = gen_blocker_boards(board.ROOK_MASKS[i]);
-        bool unmagic = true;
-        int trials = 0;
-        while(unmagic) {
-            trials++;
-            unmagic = false;
-            magics[i] = randu64() & randu64() & randu64();  
-            std::vector<uint64_t> hash(1 << bitcount(board.ROOK_MASKS[i]), 0);
-            for(uint64_t board: blockerboards) {
-                if(++hash[shitty_hash(board, magics[i])] != 1) {
-                    unmagic = true;
-                    break;
+    uint64_t magic;
+    std::array<uint64_t, 4096> hashvals;
+    hashvals.fill(0);
+    bool unmagic = true;
+    while(unmagic) {
+        unmagic = false;
+        magic = randu64() & randu64() & randu64();
+        for(int i=0;i<64;i++) {
+            hashvals.fill(0);
+            std::vector<uint64_t> atkboards = gen_bit_combs(board.ROOK_MASKS[i]);
+            for(uint64_t atkb: atkboards) {
+                int hashind = shitty_hash(atkb, magic);
+                if(hashvals[hashind] != 0) {
+                    if(shitty_hash(atkb, magic) != shitty_hash(hashvals[hashind], magic)) {
+                        unmagic = true;
+                    }
+                }
+                else {
+                    hashvals[hashind] = atkb;
                 }
             }
-            if ((trials & 0xfff) == 0) {
-                std::cout << trials << '\n';
+            if(unmagic) {
+                break;
             }
         }
-        std::cout << "found magic " << i << "!\n";
-    } 
+    }
+    std::cout << std::bitset<64>(magic);
     return 0;
-}
+} 

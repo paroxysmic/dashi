@@ -51,7 +51,7 @@ class Board{
         uint64_t getPSLRookMoves(uint64_t pos, enum Team team);
         uint64_t getPSLQueenMoves(uint64_t pos, enum Team team);
         uint64_t getPSLKingMoves(uint64_t pos, enum Team team);    
-            
+        
 };
 void desc_u64(uint64_t b);
 uint64_t shitty_hash(uint64_t key, uint64_t magic, int shiftS);

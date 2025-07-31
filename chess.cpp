@@ -71,20 +71,14 @@ std::array<uint64_t, 64> Board::gen_bishop_masks() {
     return masks;
 }   
 std::array<uint64_t, 64> Board::gen_rook_masks() {
-    int direcs[4] = {8, 1, -1, -8};
-    uint64_t bounds[4] = {RANK_1 | RANK_8, FILE_A | FILE_H, FILE_A | FILE_H, RANK_1 | RANK_8};
-    std::array<uint64_t, 64> masks = {0};
-    for (int ind=0;ind<64;++ind) {
-        for(int i=0;i<4;++i) {
-            int curr = ind;
-            for(int j=0;j<6;++j) {
-                curr += direcs[i];
-                if (((bounds[i] & (1ULL << curr)) != 0)){
-                    break;
-                }
-                masks[i] |= (1ULL << curr);
-            }
-        }
+    std::array<uint64_t, 64> masks;
+    uint64_t files[8] = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
+    uint64_t ranks[8] = {RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8};
+    for(int i=0;i<8;i++) {
+        for(int j=0;j<8;j++) {
+            masks[i + j * 8] = (files[i] & ~(RANK_1 | RANK_8)) ^ (ranks[j] & ~(FILE_A | FILE_H));
+            masks[i + j * 8] &= ~(files[i] & ranks[j]);
+        } 
     }
     return masks;
 }     
@@ -106,11 +100,11 @@ uint64_t Board::getPSLBishopMoves(uint64_t pos, enum Team team) {
     uint64_t pslm = 0;
     uint64_t blockers = blacks & whites;
     int direcs[4] = {-9, -7, 7, 9};
-    int borders[4] = {FILE_H, FILE_H, FILE_A, FILE_A};
+    uint64_t borders[4] = {FILE_H, FILE_H, FILE_A, FILE_A};
     for(int i=0;i<4;i++) {
         uint64_t cpos = pos;
         for(int j=0;j<6;j++) {
-            cpos = direcs > 0 ? cpos << direcs[i]: cpos >> -direcs[i];
+            cpos = direcs[i] > 0 ? cpos << direcs[i]: cpos >> -direcs[i];
             pslm &= cpos;
             if (((cpos & borders[i]) != 0) || (blockers & cpos != 0)) {
                 break;
@@ -124,11 +118,11 @@ uint64_t Board::getPSLRookMoves(uint64_t pos, enum Team team) {
     uint64_t pslm = 0;
     uint64_t blockers = blacks & whites;
     int direcs[4] = {-8, -1, 1, 8};
-    int borders[4] = {0, FILE_H, FILE_A, 0};
+    uint64_t borders[4] = {0, FILE_H, FILE_A, 0};
     for(int i=0;i<4;i++) {
         uint64_t cpos = pos;
         for(int j=0;j<6;j++) {
-            cpos = direcs > 0 ? cpos << direcs[i]: cpos >> -direcs[i];
+            cpos = direcs[i] > 0 ? cpos << direcs[i]: cpos >> -direcs[i];
             pslm &= cpos;
             if (((cpos & borders[i]) != 0) || (blockers & cpos != 0)) {
                 break;
@@ -155,6 +149,7 @@ void desc_u64(uint64_t b) {
         }
         std::cout << '\n'; 
     }
+    std::cout << '\n';
 }
 
 
