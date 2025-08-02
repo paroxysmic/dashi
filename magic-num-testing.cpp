@@ -63,29 +63,15 @@ uint64_t gen_rook_attack_board(uint64_t pos, uint64_t bitmask) {
 int main() {
     Board board;
     uint64_t magic;
-    std::array<uint64_t, 4096> hashvals;
-    hashvals.fill(0);
-    bool unmagic = true;
-    while(unmagic) {
-        unmagic = false;
-        magic = randu64() & randu64() & randu64();
-        for(int i=0;i<64;i++) {
-            hashvals.fill(0);
-            std::vector<uint64_t> atkboards = gen_bit_combs(board.ROOK_MASKS[i]);
-            for(uint64_t atkb: atkboards) {
-                int hashind = shitty_hash(atkb, magic);
-                if(hashvals[hashind] != 0) {
-                    if(shitty_hash(atkb, magic) != shitty_hash(hashvals[hashind], magic)) {
-                        unmagic = true;
-                    }
-                }
-                else {
-                    hashvals[hashind] = atkb;
-                }
-            }
-            if(unmagic) {
-                break;
-            }
+    std::array<uint64_t, 4096> hashkeys = {0};
+    std::array<uint64_t, 4096> hashvals = {0};
+    for(int i=0;i<64;i++) {
+        uint64_t pos = 1ULL << i;
+        uint64_t fullmask = board.ROOK_MASKS[i];
+        std::vector<uint64_t> masks = gen_bit_combs(fullmask);
+        for(uint64_t mask: masks) {
+            //hash(atkbrd(mask0)) == hash(atkbrd(mask1)) iff atkbrd(mask0) == atkbrd(mask1)
+
         }
     }
     std::cout << std::bitset<64>(magic);
