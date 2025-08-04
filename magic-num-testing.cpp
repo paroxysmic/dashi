@@ -15,7 +15,7 @@ int bitcount(uint64_t num) {
     }
     return rt;
 }
-int shitty_hash(uint64_t key, uint64_t magic){
+uint64_t shitty_hash(uint64_t key, uint64_t magic){
     //trying to extract 12 bits of entropy, so grab the 12 MSB
     //the MSB are more "entropic" bcz *any* bits can affect them
     return (key * magic) >> 52;
@@ -49,7 +49,7 @@ uint64_t gen_rook_attack_board(uint64_t pos, uint64_t bitmask) {
         uint64_t cpos = pos;
         bool unblocked = true;
         while(unblocked) {
-            cpos = direcs[i] > 0 ? cpos << direcs[i] : cpos >> -direcs[i];
+            cpos = lshif(cpos, direcs[i]);
             if((cpos == 0) || (((atkbrd | borders[i]) & cpos) != 0)) {
                 unblocked = false;
             }
@@ -60,20 +60,52 @@ uint64_t gen_rook_attack_board(uint64_t pos, uint64_t bitmask) {
     }
     return atkbrd;
 }   
-int main() {
-    Board board;
-    uint64_t magic;
-    std::array<uint64_t, 4096> hashkeys = {0};
-    std::array<uint64_t, 4096> hashvals = {0};
-    for(int i=0;i<64;i++) {
-        uint64_t pos = 1ULL << i;
-        uint64_t fullmask = board.ROOK_MASKS[i];
-        std::vector<uint64_t> masks = gen_bit_combs(fullmask);
-        for(uint64_t mask: masks) {
-            //hash(atkbrd(mask0)) == hash(atkbrd(mask1)) iff atkbrd(mask0) == atkbrd(mask1)
-
+uint64_t gen_bishop_attack_board(uint64_t pos, uint64_t bitmask) {
+        if(bitcount(pos) != 1) {
+        throw std::runtime_error("bishop position should be one-hot!");
+    }
+    uint64_t atkbrd = 0;
+    int direcs[4] = {-9, -7, 7, 9};
+    uint64_t borders[4] = {FILE_H, FILE_H, FILE_A, FILE_A};
+    for(int i=0;i<4;i++) {
+        uint64_t cpos = pos;
+        bool unblocked = true;
+        while(unblocked) {
+            cpos = lshif(cpos, direcs[i]);
+            if((cpos == 0) || (((atkbrd | borders[i]) & cpos) != 0)) {
+                unblocked = false;
+            }
+            if(unblocked) {
+                atkbrd += cpos;
+            }
         }
     }
-    std::cout << std::bitset<64>(magic);
+    return atkbrd;
+}
+bool verify_magic(uint64_t magic, int pos, bool checkRooks) {
+    Board board;
+    uint64_t fullmask = checkRooks ? board.ROOK_MASKS[pos] : board.BISHOP_MASKS[pos];
+    std::array<uint64_t, 4096> hashvals;
+    hashvals.fill(0);
+    bool unmagic = true;
+    std::vector<uint64_t> masks = gen_bit_combs(fullmask);
+    std::cout << masks.size();
+    for(uint64_t mask: masks) {
+        uint64_t indkey = shitty_hash(mask, magic); 
+        uint64_t atkbrd = checkRooks ? gen_rook_attack_board(1ULL << pos, mask) : gen_bishop_attack_board(1ULL << pos, mask);
+        desc_u64(atkbrd);
+        if(hashvals[indkey] != 0) {
+            if(atkbrd != hashvals[indkey]) {
+                return false;
+            }
+        }
+        else {
+            hashvals[indkey] = atkbrd;
+        }
+    }
+    return true;
+}
+int main() {
+    std::cout << verify_magic(randu64(), 0, true);
     return 0;
 } 

@@ -5,6 +5,8 @@
 #define set_bit(b, i) ((b) |= (1ULL << (i)))
 #define get_bit(b, i) ((b) & (1ULL << (i)))
 #define clear_bit(b, i) ((b) &= ~(1ULL << (i)))
+#define lshif(b, s) ((s > 0) ? (b << (s)) : (b >> (-s)))
+#define rshif(b, s) ((s > 0) ? (b >> (s)) : (b << (-s)))
 #define FILE_A 0x0101010101010101ULL
 #define FILE_B 0x0202020202020202ULL
 #define FILE_C 0x0404040404040404ULL
@@ -54,5 +56,5 @@ class Board{
         
 };
 void desc_u64(uint64_t b);
-uint64_t shitty_hash(uint64_t key, uint64_t magic, int shiftS);
+uint64_t shitty_hash(uint64_t key, uint64_t magic);
 #endif
