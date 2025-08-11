@@ -2,8 +2,10 @@
 #include "chess.hpp"
 #include <iostream>
 int main() {
-    for(int i=0;i<64;i++) {
-        std::cout << std::hex << bishopmagics[i] << '\n';
+    Board board;
+    int maxbit = 0;
+    for(int i=0;i<64;++i) {
+        std::cout << bitcount(board.BISHOP_MASKS[i]) << '\n';
     }
     return 0;
 }

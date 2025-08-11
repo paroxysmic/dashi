@@ -28,6 +28,7 @@ constexpr uint64_t RANK_7 = 0x00FF000000000000ULL;
 constexpr uint64_t RANK_8 = 0xFF00000000000000ULL;
 extern uint64_t rookmagics[64];
 extern uint64_t bishopmagics[64];
+extern uint64_t bishopbitnums[64];
 enum Team{
     WHITE = 0, 
     BLACK = 1,
@@ -95,6 +96,20 @@ constexpr std::array<uint64_t, 64> gen_rook_masks() {
     }
     return masks;
 } 
+constexpr std::array<uint64_t, 262144> gen_rook_attacks() {
+    std::array<uint64_t, 262144> atks = {};
+    //treat the 1d array like a 2d array, row-major
+    //ind = x + y * 4096
+    //2d array of 64 by 4096
+    //ALTERNATELY
+    return atks;
+}
+constexpr std::array<uint64_t, 32768> gen_bishop_attacks() {
+    std::array<uint64_t, 32768> atks = {};
+    return atks;
+}
+
+
 class Board{
     public:
         Board();
