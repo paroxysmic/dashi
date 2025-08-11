@@ -1,8 +1,9 @@
 #include <cstdint>
+#include "chess.hpp"
 #include <iostream>
 int main() {
-    uint64_t boof  = 0xffff;
-    boof >>= -2;
-    std::cout << boof;
+    for(int i=0;i<64;i++) {
+        std::cout << std::hex << bishopmagics[i] << '\n';
+    }
     return 0;
 }
