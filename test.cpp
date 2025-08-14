@@ -2,10 +2,6 @@
 #include "chess.hpp"
 #include <iostream>
 int main() {
-    Board board;
-    int maxbit = 0;
-    for(int i=0;i<64;++i) {
-        std::cout << bitcount(board.BISHOP_MASKS[i]) << '\n';
-    }
+    std::cout << get_leading_zeros(0ULL) << ' ' << get_trailing_zeros(0ULL);
     return 0;
 }

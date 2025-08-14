@@ -1,4 +1,4 @@
-#include "chess.hpp"
+#include "board.hpp"
 #include <cstdlib>
 #include <iostream> 
 int main() {

@@ -1,5 +1,4 @@
-#include "chess.hpp"
-#include <iostream>
+#include "board.hpp"
 uint64_t rookmagics[64] = {0x5080002840008011, 0xd60001000200a80, 0x2800100120001a, 0x480120410000800, 0x2050201001000400, 0x20010c048c0200, 
     0x2e000800458100, 0x8100005823000082, 0x1410900080061302, 0x20a4128008440221, 0x90020423201040, 0x802880030008010, 0x8000400440010200, 
     0x2080a0111024008, 0xc000400041040088, 0x4220088000a241, 0x48410010208001, 0x4440210009008010, 0xa40400e004820320, 0x9040400883000, 
@@ -23,13 +22,18 @@ int bishopbitnums[64] = {6, 5, 5, 5, 5, 5, 5, 6,
     5, 5, 7, 9, 9, 7, 5, 5, 5, 5, 7, 9, 9, 7, 5, 5, 
     5, 5, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 
     6, 5, 5, 5, 5, 5, 5, 6};
+int rookbitnums[64] = {12, 11, 11, 11, 11, 11, 11, 12, 
+ 11, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 10, 10, 10, 10, 11, 
+ 11, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 10, 10, 10, 10, 11, 
+ 11, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 10, 10, 10, 10, 11, 
+ 12, 11, 11, 11, 11, 11, 11, 12};
 Move::Move(uint64_t startsquare, uint64_t finalsquare) {
     startsq = startsquare;
     finalsq = finalsquare;
 }
 Board::Board() {
     for(int i=0;i<12;i++) {
-        this->data[i] = 0;
+        data[i] = 0;
     }
 }
 void Board::display() {
@@ -40,7 +44,7 @@ void Board::display() {
                 int r, g, b, pr, pg, pb;
                 int type = -1;
                 for(int k=0;k<12;k++) {
-                    if (get_bit(this->data[k], j + i * 8) != 0) {
+                    if (get_bit(data[k], j + i * 8) != 0) {
                         type = k;
                     }
                 }
@@ -58,24 +62,22 @@ void Board::display() {
     std::cout << "\x1b[38;2;204;204;204;48;2;12;12;12m   A      B      C      D      E      F      G      H\n";
 }
 void Board::initialize() {
-    for(int i=0;i<8;i++) {
-        set_bit(this->data[0], i + 48);
-        set_bit(this->data[6], i + 8);
-    }
-    for(int i=0;i<2;i++) {
-        for(int j=0;j<2;j++) {
-            set_bit(this->data[7 - 6 * i], 56 * i + 3 * j + 2);
-            set_bit(this->data[8 - 6 * i], 56 * i + 5 * j + 1);
-            set_bit(this->data[9 - 6 * i], 56 * i + 7 * j);
-        }
-        set_bit(this->data[10 - 6 * i], 56 * i + 3);
-        set_bit(this->data[11 - 6 * i], 56 * i + 4);
-    }
+    data[0] = RANK_7;
+    data[6] = RANK_2;
+    data[1] = RANK_8 & (FILE_B | FILE_G);
+    data[7] = RANK_1 & (FILE_B | FILE_G);
+    data[2] = RANK_8 & (FILE_C | FILE_F);
+    data[8] = RANK_1 & (FILE_C | FILE_F);
+    data[3] = RANK_8 & (FILE_A | FILE_H);
+    data[9] = RANK_1 & (FILE_A | FILE_H);
+    data[4] = RANK_8 & FILE_D;
+    data[10] = RANK_1 & FILE_E;
+    data[5] = RANK_8 & FILE_E;
+    data[11] = RANK_1 & FILE_D;
     whites = RANK_1 | RANK_2;
     blacks = RANK_7 | RANK_8;
     empties = RANK_3 | RANK_4 | RANK_5 | RANK_6;
     }
-    
 uint64_t Board::getPSLPawnMoves(uint64_t pos, enum Team team) {
     uint64_t mov = ((team == BLACK) ? pos << 8 : pos >> 8) & empties;
     uint64_t atk = ((mov >> 1) & ~(FILE_A)) | ((mov << 1) & ~(FILE_H));
@@ -83,38 +85,43 @@ uint64_t Board::getPSLPawnMoves(uint64_t pos, enum Team team) {
     return mov | (atk & enemy);
 }
 uint64_t Board::getPSLKnightMoves(uint64_t pos, enum Team team) {
-    uint64_t pslm = KNIGHT_ATTACKS[get_trailing_bits(pos)];
+    uint64_t pslm = KNIGHT_ATTACKS[get_trailing_zeros(pos)];
     pslm &= ~(team == BLACK ? whites : blacks);
     return pslm;
 }
 uint64_t Board::getPSLBishopMoves(uint64_t pos, enum Team team) {
+    //CLASSICAL APPROACH
     return 0ULL;
 }
-uint64_t Board::getPSLRookMoves(uint64_t pos, enum Team team) {
-    return 0ULL;
+uint64_t Board::getPSLRookMoves(uint64_t pos, Team team) {
+    uint64_t mask = 0;
+    uint64_t blockers = ~empties;
+    //NORTH CHECK
+    uint64_t masked_blockers = blockers & RAYS[1][get_trailing_zeros(pos)];
+
+    return mask;
 }
 uint64_t Board::getPSLQueenMoves(uint64_t pos, enum Team team) {
     return getPSLRookMoves(pos, team) & getPSLBishopMoves(pos, team);
 }
 uint64_t Board::getPSLKingMoves(uint64_t pos, enum Team team) {
-    uint64_t pslm = KING_ATTACKS[get_trailing_bits(pos)];
+    uint64_t pslm = KING_ATTACKS[get_trailing_zeros(pos)];
     pslm &= ~(team == BLACK ? whites : blacks);
     return pslm;
 }
 void desc_u64(uint64_t b) {
-    for(int i=0;i<8;i++) {
-        for(int j=0;j<8;j++) {
-            std::cout << (get_bit(b, j + (i << 3)) >> (j + (i << 3))) << ' ';
+    //0 1 2 3 4 5 6 7
+    //so on and so forth
+    for(int i=0;i<8;++i) {
+        for(int j=0;j<8;++j) {
+            int ind = 56 + j - (i * 8);
+            std::cout << ((b >> ind) & 1) << ' ';
         }
-        std::cout << '\n'; 
+        std::cout << '\n';
     }
     std::cout << '\n';
 }
-uint64_t shitty_hash(uint64_t key, uint64_t magic){
-    //trying to extract 12 bits of entropy, so grab the 12 MSB
-    //the MSB are more "entropic" bcz *any* bits can affect them
-    return (key * magic) >> (64 - bitcount(key));
-}
+
 uint64_t gen_rook_attack_board(uint64_t pos, uint64_t blockers) {
     uint64_t atkbrd = 0;
     int direcs[4] = {-8, -1, 1, 8};
@@ -153,31 +160,5 @@ uint64_t gen_bishop_attack_board(uint64_t pos, uint64_t blockers) {
     }
     return atkbrd;
 } 
-int get_trailing_bits(uint64_t v) {
-    return __builtin_ctzll(v);
-}
-int bitcount(uint64_t num) {
-    int rt = 0;
-    for(int i=0;i<64;i++) {
-        rt += ((num >> i) & 1);
-    }
-    return rt;
-}
-std::vector<uint64_t> gen_bit_combs(uint64_t bitmask) {
-    int bmbc = bitcount(bitmask);                  
-    std::vector<uint64_t> bits;
-    std::vector<uint64_t> boards(1 << bmbc, 0);
-    for(int i=0;i<64;i++) {
-        if (((bitmask >> i) & 1) == 1) {
-            bits.push_back(1ULL << i);
-        }
-    }
-    for(int i=0;i<(1<<bmbc);i++) {
-        for(int j=0;j<bmbc;j++) {
-            if(((i >> j) & 1) == 1) {
-                boards[i] |= bits[j];
-            }
-        }
-    }
-    return boards;
-}
+
+

@@ -9,6 +9,11 @@ uint64_t randu64() {
     return dist(rng);
     rand();
 }
+uint64_t shitty_hash(uint64_t key, uint64_t magic){
+    //trying to extract 12 bits of entropy, so grab the 12 MSB
+    //the MSB are more "entropic" bcz *any* bits can affect them
+    return (key * magic) >> (64 - bitcount(key));
+}
 bool verify_magic(uint64_t magic, int pos, bool checkRooks) {
     Board board;
     uint64_t fullmask = checkRooks ? board.ROOK_MASKS[pos] : board.BISHOP_MASKS[pos];
