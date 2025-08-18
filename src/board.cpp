@@ -96,9 +96,14 @@ uint64_t Board::getPSLBishopMoves(uint64_t pos, enum Team team) {
 uint64_t Board::getPSLRookMoves(uint64_t pos, Team team) {
     uint64_t mask = 0;
     uint64_t blockers = ~empties;
-    //NORTH CHECK
+    //NORTH CHECK (1)
     uint64_t masked_blockers = blockers & RAYS[1][get_trailing_zeros(pos)];
-
+    //uint64_t lsb
+    //EAST CHECK (3)
+    //SOUTH CHECK (5)
+    //WEST CHECK (7)
+    uint64_t true_blockers = (team == BLACK) ? blacks : whites;
+    mask &= ~true_blockers;
     return mask;
 }
 uint64_t Board::getPSLQueenMoves(uint64_t pos, enum Team team) {
@@ -109,19 +114,6 @@ uint64_t Board::getPSLKingMoves(uint64_t pos, enum Team team) {
     pslm &= ~(team == BLACK ? whites : blacks);
     return pslm;
 }
-void desc_u64(uint64_t b) {
-    //0 1 2 3 4 5 6 7
-    //so on and so forth
-    for(int i=0;i<8;++i) {
-        for(int j=0;j<8;++j) {
-            int ind = 56 + j - (i * 8);
-            std::cout << ((b >> ind) & 1) << ' ';
-        }
-        std::cout << '\n';
-    }
-    std::cout << '\n';
-}
-
 uint64_t gen_rook_attack_board(uint64_t pos, uint64_t blockers) {
     uint64_t atkbrd = 0;
     int direcs[4] = {-8, -1, 1, 8};

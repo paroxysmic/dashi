@@ -47,4 +47,5 @@ constexpr int bitcount(uint64_t num) {
     return rt;
 }
 std::vector<uint64_t> gen_bit_combs(uint64_t bitmask);
+void desc_u64(uint64_t b);
 #endif

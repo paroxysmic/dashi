@@ -1,4 +1,4 @@
-#include "chess.hpp"
+#include "board.hpp"
 #include <iostream>
 #include <random>
 #include <bitset>
@@ -16,7 +16,7 @@ uint64_t shitty_hash(uint64_t key, uint64_t magic){
 }
 bool verify_magic(uint64_t magic, int pos, bool checkRooks) {
     Board board;
-    uint64_t fullmask = checkRooks ? board.ROOK_MASKS[pos] : board.BISHOP_MASKS[pos];
+    uint64_t fullmask = checkRooks ? ROOK_MASKS[pos] : BISHOP_MASKS[pos];
     std::array<uint64_t, 4096> hashvals;
     //filling with -1 to prevent false positive collisions from zero-initializing the array
     hashvals.fill(-1);

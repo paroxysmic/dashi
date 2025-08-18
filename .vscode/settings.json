@@ -56,5 +56,6 @@
         "xutility": "cpp",
         "xstddef": "cpp",
         "string": "cpp"
-    }
+    },
+    "makefile.configureOnOpen": false
 }
