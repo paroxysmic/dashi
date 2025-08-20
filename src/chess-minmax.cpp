@@ -1,4 +1,5 @@
 #include "board.hpp"
+#include "lookuptabs.hpp"
 #include <cstdlib>
 #include <iostream> 
 int main() {
