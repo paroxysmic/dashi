@@ -4,6 +4,13 @@ Board::Board() {
     for(int i=0;i<12;i++) {
         data[i] = 0;
     }
+    whites = 0;
+    blacks = 0;
+    empties = -1;
+    castlingrights = 0x0f;
+    whitesturn = true;
+    halfmovecount = 0;
+    movecount = 1;
 }
 void Board::display() {
     //38 is for foreground, 48 is for background
@@ -31,21 +38,6 @@ void Board::display() {
     std::cout << "\x1b[38;2;204;204;204;48;2;12;12;12m   A      B      C      D      E      F      G      H\n";
 }
 void Board::initialize() {
-    // data[0] = RANK_7;
-    // data[6] = RANK_2;
-    // data[1] = RANK_8 & (FILE_B | FILE_G);
-    // data[7] = RANK_1 & (FILE_B | FILE_G);
-    // data[2] = RANK_8 & (FILE_C | FILE_F);
-    // data[8] = RANK_1 & (FILE_C | FILE_F);
-    // data[3] = RANK_8 & (FILE_A | FILE_H);
-    // data[9] = RANK_1 & (FILE_A | FILE_H);
-    // data[4] = RANK_8 & FILE_D;
-    // data[10] = RANK_1 & FILE_E;
-    // data[5] = RANK_8 & FILE_E;
-    // data[11] = RANK_1 & FILE_D;
-    // whites = RANK_1 | RANK_2;
-    // blacks = RANK_7 | RANK_8;
-    // empties = RANK_3 | RANK_4 | RANK_5 | RANK_6;
     setToFEN("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w KQkq - 0 1");    
 }
 void Board::setToFEN(std::string FEN) {
@@ -93,44 +85,40 @@ void Board::setToFEN(std::string FEN) {
 
         }
     }
+    fenStringStream >> chunk;
+    whitesturn = chunk[0] == 'w';
+    fenStringStream >> chunk;
+    for(char c: chunk) {
+        switch(c) {
+            case 'Q': castlingrights |= 0x01;
+                break;
+            case 'K': castlingrights |= 0x02;
+                break;
+            case 'q': castlingrights |= 0x04;
+                break;
+            case 'k': castlingrights |= 0x08;
+                break;
+            case '-': castlingrights = 0;
+                break;
+        }
+    }
+    fenStringStream >> chunk;
+    if(chunk == "-") {
+        enpassanttarget = 0;
+    }
+    else {    
+        int ind = chunk[0] - 'a' + 8 * (chunk[1] - '1');
+        enpassanttarget = 1ULL << (ind);
+    }
+    fenStringStream >> chunk;
+    halfmovecount = atoi(chunk.c_str());
+    fenStringStream >> chunk;
+    movecount = atoi(chunk.c_str());
 }
-uint64_t gen_rook_attack_board(uint64_t pos, uint64_t blockers) {
-    uint64_t atkbrd = 0;
-    int direcs[4] = {-8, -1, 1, 8};
-    uint64_t borders[4] = {0, FILE_H, FILE_A, 0};
-    for(int i=0;i<4;i++) {
-        uint64_t cpos = pos;
-        while(true) {
-            cpos = lshif(cpos, direcs[i]);
-            if(borders[i] & cpos || cpos == 0) {
-                break;
-            }
-            atkbrd |= cpos;
-            if(cpos & blockers) {
-                break;
-            }
-        }
-    }
-    return atkbrd;
-}   
-uint64_t gen_bishop_attack_board(uint64_t pos, uint64_t blockers) {
-    uint64_t atkbrd = 0;
-    int direcs[4] = {-9, -7, 7, 9};
-    uint64_t borders[4] = {FILE_H, FILE_H, FILE_A, FILE_A};
-    for(int i=0;i<4;i++) {
-        uint64_t cpos = pos;
-        while(true) {
-            cpos = lshif(cpos, direcs[i]);
-            if(borders[i] & cpos || cpos == 0) {
-                break;
-            }
-            atkbrd |= cpos;
-            if(cpos & blockers) {
-                break;
-            }
-        }
-    }
-    return atkbrd;
-} 
-
+void Board::debugPrint() {
+    std::cout << "whitesturn: " << whitesturn << '\n';
+    std::cout << "enpassanttarget: " << get_trailing_zeros(enpassanttarget) << '\n';
+    std::cout << "halfmoves clock: " << halfmovecount << '\n';
+    std::cout << "castling rights: " << castlingrights << '\n'; 
+}
 

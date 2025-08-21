@@ -30,17 +30,36 @@ class Board{
         Board();
         void display();
         void initialize();
+        void debugPrint();
         void setToFEN(std::string FEN);
         uint64_t data[12] = {0};
         uint64_t whites = 0;
         uint64_t blacks = 0;
         uint64_t empties = -1;    
+        bool whitesturn = 0;
+        /*
+        enpassant target is the square that 
+        a double forward pawn skipped, square 
+        that another pawn could capture on
+        */
         uint64_t enpassanttarget = 0;
-        uint32_t castlingrights = 0;
-        uint32_t halfmovecount = 0;
-        uint32_t movecount = 0;
+        /*
+        castling rights is a nybble
+        0x0001 - white queenside
+        0x0010 - white kingside
+        0x0100 - black queenside
+        0x1000 - black kingside
+        */
+        uint8_t castlingrights = 0;
+        /* 
+        half-moves since someone captured or 
+        moved a pawn
+        */
+        uint8_t halfmovecount = 0;
+        /*
+        total moves, starts at 1
+        */
+        uint16_t movecount = 1;
 };
 void desc_u64(uint64_t b);
-uint64_t gen_rook_attack_board(uint64_t pos, uint64_t blockers);
-uint64_t gen_bishop_attack_board(uint64_t pos, uint64_t blockers);
 #endif

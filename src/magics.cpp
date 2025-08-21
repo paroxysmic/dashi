@@ -1,6 +1,7 @@
 #include "magics.hpp"
 #include "bitutil.hpp"
 #include "board.hpp"
+#include "atkgen.hpp"
 static std::mt19937_64 rng(0xDEADBEEF); 
 std::uniform_int_distribution<uint64_t> dist(0, UINT64_MAX);
 uint64_t randu64() {
@@ -19,7 +20,7 @@ bool verify_magic(uint64_t magic, int pos, bool checkRooks) {
     std::vector<uint64_t> masks = gen_bit_combs(fullmask);
     for(uint64_t mask: masks) {
         uint64_t indkey = shitty_hash(mask, magic); 
-        uint64_t atkbrd = checkRooks ? gen_rook_attack_board(1ULL << pos, mask) : gen_bishop_attack_board(1ULL << pos, mask);
+        uint64_t atkbrd = checkRooks ? Attack::getRookAttacks(1ULL << pos, mask) : Attack::getBishopAttacks(1ULL << pos, mask);
         if(hashvals[indkey] != -1) {
             if(atkbrd != hashvals[indkey]) {
                 return false;

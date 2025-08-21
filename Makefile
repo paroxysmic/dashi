@@ -2,7 +2,7 @@
 CC := gcc
 CXX := g++
 CFLAGS := -O3
-CXXFLAGS := -O3
+CXXFLAGS := -O3 -Wall
 DBGFLAGS := -g
 COBJFLAGS := $(CFLAGS) -c
 
@@ -34,7 +34,7 @@ default: makedir all
 
 # non-phony targets
 $(TARGET): $(OBJ)
-	$(CXX) -o $@ $(OBJ) $(CFLAGS)
+	$(CXX) -o $@ $(OBJ) $(CXXFLAGS)
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	$(CXX) $(COBJFLAGS) -o $@ $<
@@ -43,7 +43,7 @@ $(DBG_PATH)/%.o: $(SRC_PATH)/%.c*
 	$(CXX) $(COBJFLAGS) $(DBGFLAGS) -o $@ $<
 
 $(TARGET_DEBUG): $(OBJ_DEBUG)
-	$(CXX) $(CFLAGS) $(DBGFLAGS) $(OBJ_DEBUG) -o $@
+	$(CXX) $(CXXFLAGS) $(DBGFLAGS) $(OBJ_DEBUG) -o $@
 
 # phony rules
 .PHONY: makedir
