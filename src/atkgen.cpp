@@ -20,8 +20,10 @@ uint64_t Attack::getRookAttacks(uint64_t pos, uint64_t blockers) {
     //include the last element from the blockers, 
     //so we don't have to differentiate 
     uint64_t mask = 0;
+    uint64_t masked_blockers = 0;
     //NORTH CHECK (1)
-    uint64_t masked_blockers = blockers & RAYS[1][get_trailing_zeros(pos)];
+    masked_blockers = blockers & RAYS[1][get_trailing_zeros(pos)];
+    
     //uint64_t lsb
     //EAST CHECK (3)
     //SOUTH CHECK (5)

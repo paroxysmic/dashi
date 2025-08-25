@@ -34,10 +34,10 @@ constexpr uint64_t rshif(uint64_t num, int shift){
     return (shift > 0) ? num >> shift : num << -shift;
 }
 constexpr uint64_t get_LSB(uint64_t num) {
-    return get_bit(num, get_leading_zeros(num));
+    return get_bit(num, get_leading_zeros(num) + 1);
 }
 constexpr uint64_t get_MSB(uint64_t num) {
-    return get_bit(num, get_trailing_zeros(num));
+    return get_bit(num, get_trailing_zeros(num) + 1);
 }
 constexpr int bitcount(uint64_t num) {
     int rt = 0;
