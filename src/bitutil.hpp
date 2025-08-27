@@ -18,6 +18,7 @@ const uint64_t RANK_5 = 0x000000FF00000000ULL;
 const uint64_t RANK_6 = 0x0000FF0000000000ULL;
 const uint64_t RANK_7 = 0x00FF000000000000ULL;
 const uint64_t RANK_8 = 0xFF00000000000000ULL;
+const uint64_t HIGH = 0x8000000000000000ULL;
 constexpr int get_trailing_zeros(uint64_t v) {
     return __builtin_ctzll(v);
 }
@@ -34,10 +35,10 @@ constexpr uint64_t rshif(uint64_t num, int shift){
     return (shift > 0) ? num >> shift : num << -shift;
 }
 constexpr uint64_t get_LSB(uint64_t num) {
-    return get_bit(num, get_leading_zeros(num) + 1);
+    return num & -num;
 }
 constexpr uint64_t get_MSB(uint64_t num) {
-    return get_bit(num, get_trailing_zeros(num) + 1);
+    return num & (1ULL << (63 - get_leading_zeros(num)));
 }
 constexpr int bitcount(uint64_t num) {
     int rt = 0;
