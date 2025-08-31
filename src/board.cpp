@@ -1,8 +1,7 @@
 #include "board.hpp"
-
 Board::Board() {
     for(int i=0;i<12;i++) {
-        data[i] = 0;
+        bitboards[i] = 0;
     }
     whites = 0;
     blacks = 0;
@@ -20,7 +19,7 @@ void Board::display() {
                 int r, g, b, pr, pg, pb;
                 int type = -1;
                 for(int k=0;k<12;k++) {
-                    if (get_bit(data[k], j + i * 8) != 0) {
+                    if (get_bit(bitboards[k], j + i * 8) != 0) {
                         type = k;
                     }
                 }
@@ -42,7 +41,7 @@ void Board::initialize() {
 }
 void Board::setToFEN(std::string FEN) {
     for(int i=0;i<12;i++) {
-        data[i] = 0;
+        bitboards[i] = 0;
     }
     whites = 0;
     blacks = 0;
@@ -55,29 +54,29 @@ void Board::setToFEN(std::string FEN) {
     //starts at a8 
     for(char c: chunk) {
         switch (c){
-            case 'P': data[0] |= (1ULL << pos++);
+            case 'P': bitboards[0] |= (1ULL << pos++);
                 break;
-            case 'N': data[1] |= (1ULL << pos++);
+            case 'N': bitboards[1] |= (1ULL << pos++);
                 break;
-            case 'B': data[2] |= (1ULL << pos++);
+            case 'B': bitboards[2] |= (1ULL << pos++);
                 break;
-            case 'R': data[3] |= (1ULL << pos++);
+            case 'R': bitboards[3] |= (1ULL << pos++);
                 break;
-            case 'Q': data[4] |= (1ULL << pos++);
+            case 'Q': bitboards[4] |= (1ULL << pos++);
                 break;
-            case 'K': data[5] |= (1ULL << pos++);
+            case 'K': bitboards[5] |= (1ULL << pos++);
                 break;
-            case 'p': data[6] |= (1ULL << pos++);
+            case 'p': bitboards[6] |= (1ULL << pos++);
                 break;
-            case 'n': data[7] |= (1ULL << pos++);
+            case 'n': bitboards[7] |= (1ULL << pos++);
                 break;
-            case 'b': data[8] |= (1ULL << pos++);
+            case 'b': bitboards[8] |= (1ULL << pos++);
                 break;
-            case 'r': data[9] |= (1ULL << pos++);
+            case 'r': bitboards[9] |= (1ULL << pos++);
                 break;
-            case 'q': data[10] |= (1ULL << pos++);
+            case 'q': bitboards[10] |= (1ULL << pos++);
                 break;
-            case 'k': data[11] |= (1ULL << pos++);
+            case 'k': bitboards[11] |= (1ULL << pos++);
                 break;
             case '/': pos -= 16;
                 break;
@@ -111,14 +110,75 @@ void Board::setToFEN(std::string FEN) {
         enpassanttarget = 1ULL << (ind);
     }
     fenStringStream >> chunk;
-    halfmovecount = atoi(chunk.c_str());
+    halfmovecount = std::stoi(chunk);
     fenStringStream >> chunk;
-    movecount = atoi(chunk.c_str());
+    movecount = std::stoi(chunk);
 }
 void Board::debugPrint() {
-    std::cout << "whitesturn: " << whitesturn << '\n';
-    std::cout << "enpassanttarget: " << get_trailing_zeros(enpassanttarget) << '\n';
-    std::cout << "halfmoves clock: " << halfmovecount << '\n';
-    std::cout << "castling rights: " << castlingrights << '\n'; 
+    std::cout << "whitesturn: " << (whitesturn ? "true!" : "false!") << '\n';
+    int eptpos = get_trailing_zeros(enpassanttarget);
+    std::cout << "enpassanttarget: ";
+    if(enpassanttarget == 0) {
+        std::cout << "none!";
+    }
+    else {
+        std::cout << eptpos;
+    }
+    std::cout << "\nhalfmoves clock: " << (int) halfmovecount << '\n';
+    std::cout << "fullmoves clock: " << movecount << '\n';
+    std::cout << "castling rights: "; 
+    char castlingRightChars[4] = {'Q', 'K', 'q', 'k'};
+    for(int i=0;i<4;i++) {
+        if((castlingrights >> i) & 1) { 
+            std::cout << castlingRightChars[i];
+        }
+    }
+    std::cout << '\n';
 }
-
+void Board::makeMove(Move move) {
+    if(move.is_castle != 0) {
+        if(move.is_castle[0]) {
+            bitboards[WHITE_KING] = RANK_1 & FILE_C;
+            bitboards[WHITE_ROOK] ^= ((RANK_1 & (FILE_A | FILE_D)));
+        }
+        if(move.is_castle[1]) {
+            bitboards[WHITE_KING] = RANK_1 & FILE_G;
+            bitboards[WHITE_ROOK] ^= ((RANK_1 & (FILE_F | FILE_H)));
+        }
+        if(move.is_castle[2]) {
+            bitboards[BLACK_KING] = RANK_8 & FILE_C;
+            bitboards[BLACK_ROOK] ^= ((RANK_8 & (FILE_A | FILE_D)));
+        }
+        if(move.is_castle[3]) {
+            bitboards[BLACK_KING] = RANK_8 & FILE_G;
+            bitboards[BLACK_ROOK] ^= ((RANK_1 & (FILE_F | FILE_H)));
+        }
+    }
+    whitesturn = !whitesturn;
+    castlingrights = move.end_castlingrights;
+    for(int i=0;i<12;i++) {
+        
+    }
+}
+void Board::unmakeMove(Move move) {
+    if(move.is_castle != 0) {
+        if(move.is_castle[0]) {
+            bitboards[WHITE_KING] = RANK_1 & FILE_E;
+            bitboards[WHITE_ROOK] ^= ((RANK_1 & (FILE_A | FILE_D)));
+        }
+        if(move.is_castle[1]) {
+            bitboards[WHITE_KING] = RANK_1 & FILE_E;
+            bitboards[WHITE_ROOK] ^= ((RANK_1 & (FILE_F | FILE_H)));
+        }
+        if(move.is_castle[2]) {
+            bitboards[BLACK_KING] = RANK_8 & FILE_E;
+            bitboards[BLACK_ROOK] ^= ((RANK_8 & (FILE_A | FILE_D)));
+        }
+        if(move.is_castle[3]) {
+            bitboards[BLACK_KING] = RANK_8 & FILE_E;
+            bitboards[BLACK_ROOK] ^= ((RANK_8 & (FILE_F | FILE_H)));
+        }
+    }
+    whitesturn = !whitesturn;      
+    castlingrights = move.init_castlingrights;
+}

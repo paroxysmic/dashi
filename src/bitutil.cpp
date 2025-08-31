@@ -19,8 +19,8 @@ std::vector<uint64_t> gen_bit_combs(uint64_t bitmask) {
     return boards;
 }
 void desc_u64(uint64_t b) {
-    //0 1 2 3 4 5 6 7
-    //so on and so forth
+    //a1 is the LSB, goes +1 on right and +8 on up so h8 is the MSB
+    //row major woop woop
     for(int i=0;i<8;++i) {
         for(int j=0;j<8;++j) {
             int ind = 56 + j - (i * 8);

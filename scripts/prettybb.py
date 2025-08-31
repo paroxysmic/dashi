@@ -23,9 +23,4 @@ def print_bb(bb_evalstring):
 
     print("\n".join([" ".join(line[::-1]) for line in textwrap.wrap(bb_str, 8)]) + "\n")
 
-
-if len(sys.argv) == 1:
-    for line in sys.stdin.readlines():
-        print_bb(line.strip())
-else:
-    print_bb(sys.argv[1])
+print_bb(input())

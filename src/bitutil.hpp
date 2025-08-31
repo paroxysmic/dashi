@@ -19,6 +19,7 @@ const uint64_t RANK_6 = 0x0000FF0000000000ULL;
 const uint64_t RANK_7 = 0x00FF000000000000ULL;
 const uint64_t RANK_8 = 0xFF00000000000000ULL;
 const uint64_t HIGH = 0x8000000000000000ULL;
+//just aliases lol
 constexpr int get_trailing_zeros(uint64_t v) {
     return __builtin_ctzll(v);
 }

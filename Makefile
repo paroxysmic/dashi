@@ -3,7 +3,7 @@ CC := gcc
 CXX := g++
 CFLAGS := -O3
 CXXFLAGS := -O3 -Wall
-DBGFLAGS := -g
+DBGFLAGS := -g -pg -no-pie
 COBJFLAGS := $(CFLAGS) -c
 
 # path macros
