@@ -4,10 +4,17 @@
 class Move{
     public:
         Move();
-        uint8_t init_ind;   
-        uint8_t end_ind;
+        uint64_t init_sq;   
+        uint64_t end_sq;
         uint8_t init_castlingrights;
         uint8_t end_castlingrights;
+        uint8_t piece_type;
+        /*
+        if capture_type is 0, the move is not a capture
+        otherwise, it start with pawn - 1 and increases
+        according to piece value
+        */
+        uint8_t capture_type;
         /*
         uses same four bits as castlingrights
         but this describes if it's a castle

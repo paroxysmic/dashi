@@ -16,7 +16,7 @@ class Board{
         void setToFEN(std::string FEN);
         void makeMove(Move move);
         void unmakeMove(Move move);
-        std::array<Move, 256> getPSLMoves();
+        std::vector<Move> getPSLMoves();
         uint64_t bitboards[12] = {0};
         uint64_t whites = 0;
         uint64_t blacks = 0;

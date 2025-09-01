@@ -156,8 +156,10 @@ void Board::makeMove(Move move) {
     }
     whitesturn = !whitesturn;
     castlingrights = move.end_castlingrights;
-    for(int i=0;i<12;i++) {
-        
+    bitboards[move.piece_type] ^= (move.init_sq | move.end_sq);
+    if(move.capture_type) {
+        uint8_t bbcaptind = move.piece_type < 6 ? move.capture_type - 1 : move.capture_type + 5;
+        bitboards[bbcaptind] &= ~move.end_sq;
     }
 }
 void Board::unmakeMove(Move move) {
