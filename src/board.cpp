@@ -7,7 +7,9 @@ Board::Board() {
     blacks = 0;
     empties = -1;
     castlingrights = 0x0f;
-    whitesturn = true;
+    whitesturn = true;  
+    blackInCheck = false;
+    whiteInCheck = false;
     halfmovecount = 0;
     movecount = 1;
 }
@@ -183,4 +185,14 @@ void Board::unmakeMove(Move move) {
     }
     whitesturn = !whitesturn;      
     castlingrights = move.init_castlingrights;
+}
+bool Board::verifyMove(Move move) {
+    if(move.capture_type == KING) {
+        return false;   
+    }
+    bool weAreInCheck = whitesturn ? whiteInCheck : blackInCheck;
+    if(weAreInCheck) {
+        
+    }
+
 }

@@ -41,7 +41,7 @@ $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 
 $(DBG_PATH)/%.o: $(SRC_PATH)/%.c*
 	$(CXX) $(COBJFLAGS) $(DBGFLAGS) -o $@ $<
-
+k
 $(TARGET_DEBUG): $(OBJ_DEBUG)
 	$(CXX) $(CXXFLAGS) $(DBGFLAGS) $(OBJ_DEBUG) -o $@
 

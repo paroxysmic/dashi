@@ -25,5 +25,6 @@ class Move{
         */
         bool is_castle[4];
         bool is_enpassant;
+        bool is_white_move;
 };
 #endif

@@ -16,11 +16,14 @@ class Board{
         void setToFEN(std::string FEN);
         void makeMove(Move move);
         void unmakeMove(Move move);
+        bool verifyMove(Move move);
         std::vector<Move> getPSLMoves();
         uint64_t bitboards[12] = {0};
         uint64_t whites = 0;
         uint64_t blacks = 0;
-        uint64_t empties = -1;    
+        uint64_t empties = -1; 
+        bool whiteInCheck = false;
+        bool blackInCheck = false;   
         bool whitesturn = true;
         /*
         enpassant target is the square that 
