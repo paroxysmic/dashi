@@ -13,7 +13,7 @@ Board::Board() {
     halfmovecount = 0;
     movecount = 1;
 }
-void Board::display() {
+void Board::display(bool isWhite) {
     //38 is for foreground, 48 is for background
     for(int i=0;i<8;i++) {
         for(int row=0;row<3;row++){
@@ -21,9 +21,7 @@ void Board::display() {
                 int r, g, b, pr, pg, pb;
                 int type = -1;
                 for(int k=0;k<12;k++) {
-                    if (get_bit(bitboards[k], j + i * 8) != 0) {
-                        type = k;
-                    }
+                    if (get_bit(bitboards[k], j + i * 8) != 0) { type = k; }
                 }
                 char piece = row == 1 && type != -1 ? "PNBRQK"[type % 6] : ' ';
                 if ((i + j) % 2 == 1) {r = 118; g = 150; b = 86;}
@@ -91,16 +89,20 @@ void Board::setToFEN(std::string FEN) {
     fenStringStream >> chunk;
     for(char c: chunk) {
         switch(c) {
-            case 'Q': castlingrights |= 0x01;
+            case 'Q': castlingrights.setRight(WHITE_QUEENSIDE);
                 break;
-            case 'K': castlingrights |= 0x02;
+            case 'K': castlingrights.setRight(WHITE_KINGSIDE);
                 break;
-            case 'q': castlingrights |= 0x04;
+            case 'q': castlingrights.setRight(BLACK_QUEENSIDE);
                 break;
-            case 'k': castlingrights |= 0x08;
+            case 'k': castlingrights.setRight(BLACK_KINGSIDE);
                 break;
-            case '-': castlingrights = 0;
-                break;
+            case '-': 
+                castlingrights.clearRight(WHITE_QUEENSIDE);
+                castlingrights.clearRight(WHITE_KINGSIDE);
+                castlingrights.clearRight(BLACK_QUEENSIDE);
+                castlingrights.clearRight(BLACK_KINGSIDE);
+            break;
         }
     }
     fenStringStream >> chunk;
@@ -129,70 +131,19 @@ void Board::debugPrint() {
     std::cout << "\nhalfmoves clock: " << (int) halfmovecount << '\n';
     std::cout << "fullmoves clock: " << movecount << '\n';
     std::cout << "castling rights: "; 
-    char castlingRightChars[4] = {'Q', 'K', 'q', 'k'};
     for(int i=0;i<4;i++) {
-        if((castlingrights >> i) & 1) { 
-            std::cout << castlingRightChars[i];
+        if(castlingrights.isWhiteQueen()) {
+            std::cout << "Q";
+        }
+        if(castlingrights.isWhiteKing()) {
+            std::cout << "K";
+        }
+        if(castlingrights.isBlackQueen()) {
+            std::cout << "q";
+        }
+        if(castlingrights.isBlackKing()) {
+            std::cout << "k";
         }
     }
     std::cout << '\n';
-}
-void Board::makeMove(Move move) {
-    if(move.is_castle != 0) {
-        if(move.is_castle[0]) {
-            bitboards[WHITE_KING] = RANK_1 & FILE_C;
-            bitboards[WHITE_ROOK] ^= ((RANK_1 & (FILE_A | FILE_D)));
-        }
-        if(move.is_castle[1]) {
-            bitboards[WHITE_KING] = RANK_1 & FILE_G;
-            bitboards[WHITE_ROOK] ^= ((RANK_1 & (FILE_F | FILE_H)));
-        }
-        if(move.is_castle[2]) {
-            bitboards[BLACK_KING] = RANK_8 & FILE_C;
-            bitboards[BLACK_ROOK] ^= ((RANK_8 & (FILE_A | FILE_D)));
-        }
-        if(move.is_castle[3]) {
-            bitboards[BLACK_KING] = RANK_8 & FILE_G;
-            bitboards[BLACK_ROOK] ^= ((RANK_1 & (FILE_F | FILE_H)));
-        }
-    }
-    whitesturn = !whitesturn;
-    castlingrights = move.end_castlingrights;
-    bitboards[move.piece_type] ^= (move.init_sq | move.end_sq);
-    if(move.capture_type) {
-        uint8_t bbcaptind = move.piece_type < 6 ? move.capture_type - 1 : move.capture_type + 5;
-        bitboards[bbcaptind] &= ~move.end_sq;
-    }
-}
-void Board::unmakeMove(Move move) {
-    if(move.is_castle != 0) {
-        if(move.is_castle[0]) {
-            bitboards[WHITE_KING] = RANK_1 & FILE_E;
-            bitboards[WHITE_ROOK] ^= ((RANK_1 & (FILE_A | FILE_D)));
-        }
-        if(move.is_castle[1]) {
-            bitboards[WHITE_KING] = RANK_1 & FILE_E;
-            bitboards[WHITE_ROOK] ^= ((RANK_1 & (FILE_F | FILE_H)));
-        }
-        if(move.is_castle[2]) {
-            bitboards[BLACK_KING] = RANK_8 & FILE_E;
-            bitboards[BLACK_ROOK] ^= ((RANK_8 & (FILE_A | FILE_D)));
-        }
-        if(move.is_castle[3]) {
-            bitboards[BLACK_KING] = RANK_8 & FILE_E;
-            bitboards[BLACK_ROOK] ^= ((RANK_8 & (FILE_F | FILE_H)));
-        }
-    }
-    whitesturn = !whitesturn;      
-    castlingrights = move.init_castlingrights;
-}
-bool Board::verifyMove(Move move) {
-    if(move.capture_type == KING) {
-        return false;   
-    }
-    bool weAreInCheck = whitesturn ? whiteInCheck : blackInCheck;
-    if(weAreInCheck) {
-        
-    }
-
 }

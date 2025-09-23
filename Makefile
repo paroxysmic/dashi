@@ -1,67 +1,29 @@
-# tool macros
-CC := gcc
-CXX := g++
-CFLAGS := -O3
-CXXFLAGS := -O3 -Wall
-DBGFLAGS := -g -pg -no-pie
-COBJFLAGS := $(CFLAGS) -c
-
-# path macros
-BIN_PATH := bin
-OBJ_PATH := obj
-SRC_PATH := src
-DBG_PATH := debug
-
-# compile macros
-TARGET_NAME := cmm.exe
-TARGET := $(TARGET_NAME)
-TARGET_DEBUG := $(DBG_PATH)/$(TARGET_NAME)
-
-# src files & obj files
-SRC := $(foreach x, $(SRC_PATH), $(wildcard $(addprefix $(x)/*,.c*)))
-OBJ := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
-OBJ_DEBUG := $(addprefix $(DBG_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
-
-# clean files list
-DISTCLEAN_LIST := $(OBJ) \
-                  $(OBJ_DEBUG)
-CLEAN_LIST := $(TARGET) \
-			  $(TARGET_DEBUG) \
-			  $(DISTCLEAN_LIST)
-
-# default rule
-default: makedir all
-
-# non-phony targets
-$(TARGET): $(OBJ)
-	$(CXX) -o $@ $(OBJ) $(CXXFLAGS)
-
-$(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
-	$(CXX) $(COBJFLAGS) -o $@ $<
-
-$(DBG_PATH)/%.o: $(SRC_PATH)/%.c*
-	$(CXX) $(COBJFLAGS) $(DBGFLAGS) -o $@ $<
-k
-$(TARGET_DEBUG): $(OBJ_DEBUG)
-	$(CXX) $(CXXFLAGS) $(DBGFLAGS) $(OBJ_DEBUG) -o $@
-
-# phony rules
-.PHONY: makedir
-makedir:
-	@mkdir -p $(BIN_PATH) $(OBJ_PATH) $(DBG_PATH)
-
-.PHONY: all
-all: $(TARGET)
-
-.PHONY: debug
-debug: $(TARGET_DEBUG)
-
-.PHONY: clean
+OBJDIR := obj
+LIBDIR := lib
+SRCDIR := src
+DBGOBJDIR := dbg-obj
+LIBFILES := $(wildcard $(LIBDIR)/*.cpp)
+OBJFILES := $(patsubst $(LIBDIR)/%.cpp,$(OBJDIR)/%.o,$(LIBFILES))
+DBGOBJFILES := $(patsubst $(LIBDIR)/%.cpp,$(DBGOBJDIR)/%.o, $(LIBFILES))
+main: $(OBJFILES) $(SRCDIR)/main.cpp
+	g++ -c $(SRCDIR)/main.cpp -Iinclude -O3 -o $(OBJDIR)/main.o
+	g++ $(OBJFILES) $(OBJDIR)/main.o -O3 -o main
+test: $(DBGOBJFILES) $(SRCDIR)/test.cpp
+	g++ -c -g $(SRCDIR)/test.cpp -Iinclude -O0 -o $(DBGOBJDIR)/test.o
+	g++ -g $(DBGOBJFILES) $(DBGOBJDIR)/test.o -O0 -o test
+$(OBJDIR)/%.o: $(LIBDIR)/%.cpp
+	g++ -c $< -Iinclude -O3 -o $@
+$(DBGOBJDIR)/%.o: $(LIBDIR)/%.cpp
+	g++ -c $< -Iinclude -g -O0 -o $@
+.PHONY: clean init
 clean:
-	@echo CLEAN $(CLEAN_LIST)
-	@rm -f $(CLEAN_LIST)
-
-.PHONY: distclean
-distclean:
-	@echo CLEAN $(DISTCLEAN_LIST)
-	@rm -f $(DISTCLEAN_LIST)
+	@echo CLEAN $(OBJFILES)
+	@rm -f $(OBJFILES)
+	@echo CLEAN main.exe test.exe
+	@rm -f main.exe test.exe
+init:
+	@mkdir -p $(OBJDIR)
+	@mkdir -p $(LIBDIR)
+	@mkdir -p $(SRCDIR)
+	@mkdir -p $(DBGOBJDIR)
+	@mkdir -p include

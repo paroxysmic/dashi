@@ -1,21 +1,21 @@
 #include "atkgen.hpp"
-uint64_t Attack::genPSLWhitePawnAttacks(uint64_t pos, uint64_t blockers){
-    uint64_t capt = ((pos << 7) & (~(FILE_A) | blockers)) | ((pos << 9) & (~(FILE_H) | blockers));
+U64 genPSLWhitePawnAttacks(U64 pos, U64 blockers){
+    U64 capt = ((pos << 7) & (~(FILE_A) | blockers)) | ((pos << 9) & (~(FILE_H) | blockers));
     return capt | ((pos << 8) & ~(blockers));
 }
-uint64_t Attack::genPSLBlackPawnAttacks(uint64_t pos, uint64_t blockers){
-    uint64_t capt = ((pos >> 7) & (~(FILE_H) | blockers)) | ((pos >> 9) & (~(FILE_A) | blockers));
+U64 genPSLBlackPawnAttacks(U64 pos, U64 blockers){
+    U64 capt = ((pos >> 7) & (~(FILE_H) | blockers)) | ((pos >> 9) & (~(FILE_A) | blockers));
     return capt | ((pos >> 8) & ~(blockers));
 }
-uint64_t Attack::genPSLKnightAttacks(uint64_t pos, uint64_t blockers) {
-    uint64_t pslm = KNIGHT_ATTACKS[get_trailing_zeros(pos)];
+U64 genPSLKnightAttacks(U64 pos, U64 blockers) {
+    U64 pslm = KNIGHT_ATTACKS[get_trailing_zeros(pos)];
     pslm &= ~blockers;
     return pslm;
 }
-uint64_t Attack::genPSLBishopAttacks(uint64_t pos, uint64_t blockers) {
-    uint64_t atks = 0;
-    uint64_t masked_blockers = 0;
-    uint64_t closest_blocker = 0;
+U64 genPSLBishopAttacks(U64 pos, U64 blockers) {
+    U64 atks = 0;
+    U64 masked_blockers = 0;
+    U64 closest_blocker = 0;
     //NORTH-WEST CHECK
     masked_blockers = blockers & getray(0, pos);
     closest_blocker = get_LSB(masked_blockers | HIGH);
@@ -34,10 +34,10 @@ uint64_t Attack::genPSLBishopAttacks(uint64_t pos, uint64_t blockers) {
     atks |= getray(6, pos) ^ getray(6, closest_blocker);
     return atks;
 }
-uint64_t Attack::genPSLRookAttacks(uint64_t pos, uint64_t blockers) {
-    uint64_t atks = 0;
-    uint64_t masked_blockers = 0;
-    uint64_t closest_blocker = 0;
+U64 genPSLRookAttacks(U64 pos, U64 blockers) {
+    U64 atks = 0;
+    U64 masked_blockers = 0;
+    U64 closest_blocker = 0;
     //NORTH CHECK
     masked_blockers = blockers & getray(1, pos);
     closest_blocker = get_LSB(masked_blockers | HIGH);
@@ -56,11 +56,11 @@ uint64_t Attack::genPSLRookAttacks(uint64_t pos, uint64_t blockers) {
     atks |= getray(7, pos) ^ getray(7, closest_blocker);
     return atks;
 }
-uint64_t Attack::genPSLQueenAttacks(uint64_t pos, uint64_t blockers) {
-    return Attack::genPSLRookAttacks(pos, blockers) & Attack::genPSLBishopAttacks(pos, blockers);
+U64 genPSLQueenAttacks(U64 pos, U64 blockers) {
+    return genPSLRookAttacks(pos, blockers) & genPSLBishopAttacks(pos, blockers);
 }
-uint64_t Attack::genPSLKingAttacks(uint64_t pos, uint64_t blockers) {
-    uint64_t pslm = KING_ATTACKS[get_trailing_zeros(pos)];
+U64 genPSLKingAttacks(U64 pos, U64 blockers) {
+    U64 pslm = KING_ATTACKS[get_trailing_zeros(pos)];
     pslm &= ~blockers;
     return pslm;
 }
