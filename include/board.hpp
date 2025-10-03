@@ -2,9 +2,24 @@
 #include <iostream>
 #include <sstream>
 #include <array>
+#include <stack>
+#include <set>
 #include "bitutil.hpp" 
 #include "enums.hpp"
 #include "move.hpp"
+struct BoardState {
+    BoardState() {};
+    bool draw;
+    bool whitesturn;
+    bool inCheck[2];
+    U8 halfmovecount;
+    U16 movecount;
+    U64 enpassanttarget;
+    Castle castlingrights;
+};
+struct BoardPos {
+    std::array<U64, 12> bitboards;
+};
 class Board{
     public:
         Board();
@@ -18,6 +33,7 @@ class Board{
         U64 empties = -1; 
         bool whiteInCheck = false;
         bool blackInCheck = false;   
+        bool draw = false;
         bool whitesturn = true;
         /*
         enpassant target is the square that 
@@ -42,4 +58,7 @@ class Board{
         total moves, starts at 1
         */
         U16 movecount = 1;
+        std::stack<BoardState> stateStack;
+        std::set<BoardPos> firstRepPos;
+        std::set<BoardPos> secondRepPos;
 };

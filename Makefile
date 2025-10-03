@@ -19,6 +19,8 @@ $(DBGOBJDIR)/%.o: $(LIBDIR)/%.cpp
 clean:
 	@echo CLEAN $(OBJFILES)
 	@rm -f $(OBJFILES)
+	@echo CLEAN $(DBGOBJFILES)
+	@rm -f $(DBGOBJFILES)
 	@echo CLEAN main.exe test.exe
 	@rm -f main.exe test.exe
 init:
