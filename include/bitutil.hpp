@@ -37,8 +37,6 @@ constexpr int bitcount(U64 num) {
     return rt;
 }
 inline void desc_u64(U64 b) {
-    //a1 is the LSB, goes +1 on right and +8 on up so h8 is the MSB
-    //row major woop woop
     for(int i=0;i<8;++i) {
         for(int j=0;j<8;++j) {
             int ind = 56 + j - (i * 8);
