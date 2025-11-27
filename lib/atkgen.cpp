@@ -64,3 +64,4 @@ U64 genPSLKingAttacks(U64 pos, U64 blockers) {
     pslm &= ~blockers;
     return pslm;
 }
+

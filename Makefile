@@ -17,12 +17,9 @@ $(DBGOBJDIR)/%.o: $(LIBDIR)/%.cpp
 	g++ -c $< -Iinclude -g -O0 -o $@
 .PHONY: clean init
 clean:
-	@echo CLEAN $(OBJFILES)
-	@rm -f $(OBJFILES)
-	@echo CLEAN $(DBGOBJFILES)
-	@rm -f $(DBGOBJFILES)
-	@echo CLEAN main.exe test.exe
-	@rm -f main.exe test.exe
+	rm -f $(OBJFILES)
+	rm -f $(DBGOBJFILES)
+	rm -f main test
 init:
 	@mkdir -p $(OBJDIR)
 	@mkdir -p $(LIBDIR)

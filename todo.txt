@@ -1,0 +1,5 @@
+change enpassanttarget to just the file, no need for a full U64
+pick a naming convention and stick to it
+finish zobrist hashing
+start on transposition tables -> elim threefold repetition
+find a non-brute way to filter legal moves

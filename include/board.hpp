@@ -15,7 +15,7 @@ struct BoardState {
     U8 halfmovecount;
     U16 movecount;
     U64 enpassanttarget;
-    Castle castlingrights;
+    U8 castlingrights;
 };
 struct BoardPos {
     std::array<U64, 12> bitboards;
@@ -34,7 +34,7 @@ class Board{
         bool whiteInCheck = false;
         bool blackInCheck = false;   
         bool draw = false;
-        bool whitesturn = true;
+        bool whiteToMove = true;
         /*
         enpassant target is the square that 
         a double forward pawn skipped, square 
@@ -48,7 +48,7 @@ class Board{
         0b0100 - black queenside
         0b1000 - black kingside
         */
-        Castle castlingrights = Castle(15);
+        U8 castlingrights = 15;
         /* 
         half-moves since someone captured or 
         moved a pawn

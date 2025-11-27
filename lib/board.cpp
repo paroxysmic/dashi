@@ -7,7 +7,7 @@ Board::Board() {
     blacks = 0;
     empties = -1;
     castlingrights = 0x0f;
-    whitesturn = true;  
+    whiteToMove = true;  
     blackInCheck = false;
     whiteInCheck = false;
     halfmovecount = 0;
@@ -85,23 +85,20 @@ void Board::setToFEN(std::string FEN) {
         }
     }
     fenStringStream >> chunk;
-    whitesturn = chunk[0] == 'w';
+    whiteToMove = chunk[0] == 'w';
     fenStringStream >> chunk;
     for(char c: chunk) {
         switch(c) {
-            case 'Q': castlingrights.setRight(WHITE_QUEENSIDE);
+            case 'Q': castlingrights |= 1;
                 break;
-            case 'K': castlingrights.setRight(WHITE_KINGSIDE);
+            case 'K': castlingrights |= 2;
                 break;
-            case 'q': castlingrights.setRight(BLACK_QUEENSIDE);
+            case 'q': castlingrights |= 4;
                 break;
-            case 'k': castlingrights.setRight(BLACK_KINGSIDE);
+            case 'k': castlingrights |= 8;
                 break;
             case '-': 
-                castlingrights.clearRight(WHITE_QUEENSIDE);
-                castlingrights.clearRight(WHITE_KINGSIDE);
-                castlingrights.clearRight(BLACK_QUEENSIDE);
-                castlingrights.clearRight(BLACK_KINGSIDE);
+                castlingrights = 0;
             break;
         }
     }
@@ -119,7 +116,7 @@ void Board::setToFEN(std::string FEN) {
     movecount = std::stoi(chunk);
 }
 void Board::debugPrint() {
-    std::cout << "whitesturn: " << (whitesturn ? "true!" : "false!") << '\n';
+    std::cout << "white to move: " << (whiteToMove ? "true!" : "false!") << '\n';
     int eptpos = get_trailing_zeros(enpassanttarget);
     std::cout << "enpassanttarget: ";
     if(enpassanttarget == 0) {
@@ -132,16 +129,16 @@ void Board::debugPrint() {
     std::cout << "fullmoves clock: " << movecount << '\n';
     std::cout << "castling rights: "; 
     for(int i=0;i<4;i++) {
-        if(castlingrights.isWhiteQueen()) {
+        if(castlingrights & 1) {
             std::cout << "Q";
         }
-        if(castlingrights.isWhiteKing()) {
+        if(castlingrights & 2) {
             std::cout << "K";
         }
-        if(castlingrights.isBlackQueen()) {
+        if(castlingrights & 4) {
             std::cout << "q";
         }
-        if(castlingrights.isBlackKing()) {
+        if(castlingrights & 8) {
             std::cout << "k";
         }
     }
